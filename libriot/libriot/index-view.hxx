@@ -28,10 +28,10 @@ using endianess = unclassified::endianess;
 
 namespace detail {
 
-template <method::type CompressionMethod, std::size_t BlockLen>
+template <compression_method::type CompressionMethod, std::size_t BlockLen>
 struct raw {
   using integer_type = std::uint32_t;
-  static constexpr method::type COMPRESSION_METHOD = CompressionMethod;
+  static constexpr compression_method::type COMPRESSION_METHOD = CompressionMethod;
   static constexpr endianess LE = endianess::LE;
   static constexpr std::size_t BLOCKLEN = BlockLen;
   static constexpr std::size_t estimate_compressed_size() noexcept {
@@ -50,10 +50,10 @@ struct raw {
   }
 };
 
-template <method::type CompressionMethod, std::size_t BlockLen>
+template <compression_method::type CompressionMethod, std::size_t BlockLen>
 struct raw_key128 {
   using integer_type = __uint128_t;
-  static constexpr method::type COMPRESSION_METHOD = CompressionMethod;
+  static constexpr compression_method::type COMPRESSION_METHOD = CompressionMethod;
   static constexpr std::size_t BLOCKLEN = BlockLen;
   static constexpr std::size_t estimate_compressed_size() noexcept {
     return sizeof( offset_type ) * BlockLen;
@@ -75,10 +75,10 @@ struct raw_key128 {
   }
 };
 
-template <method::type CompressionMethod, typename Decode>
+template <compression_method::type CompressionMethod, typename Decode>
 struct decode_wrapper {
   using integer_type = typename Decode::integer_type;
-  static constexpr method::type COMPRESSION_METHOD = CompressionMethod;
+  static constexpr compression_method::type COMPRESSION_METHOD = CompressionMethod;
   static constexpr std::size_t BLOCKLEN = Decode::BLOCKLEN;
   static constexpr std::size_t estimate_compressed_size() noexcept {
     return Decode::estimate_compressed_size();
@@ -95,12 +95,12 @@ struct decode_wrapper {
   }
 };
 
-using svb128d1 = decode_wrapper<method::SVB128D1, riot::streamvbyte::svb128d1_i128>;
-using svb256d1 = decode_wrapper<method::SVB256D1, riot::streamvbyte::svb256d1_i128>;
-using bp128d1 = decode_wrapper<method::BP128D1, riot::bitpack::bp128d1>;
-using bp256d1 = decode_wrapper<method::BP256D1, riot::bitpack::bp256d1>;
-using raw128 = raw<method::UC128, 128>;
-using raw256 = raw<method::UC256, 256>;
+using svb128d1 = decode_wrapper<compression_method::SVB128D1, riot::streamvbyte::svb128d1_i128>;
+using svb256d1 = decode_wrapper<compression_method::SVB256D1, riot::streamvbyte::svb256d1_i128>;
+using bp128d1 = decode_wrapper<compression_method::BP128D1, riot::bitpack::bp128d1>;
+using bp256d1 = decode_wrapper<compression_method::BP256D1, riot::bitpack::bp256d1>;
+using raw128 = raw<compression_method::UC128, 128>;
+using raw256 = raw<compression_method::UC256, 256>;
 
 } // namespace detail
 
@@ -172,8 +172,8 @@ class index_view {
     auto const* p = _data.begin() + offset;
     if( p + 1 + METASZ >= _data.end() ) { return false; }
     auto const* const end = _data.end() - METASZ;
-    encoding enc{ *p++ };
-    if( not ( enc._tag == tag::CBLOCK and enc._type == block_subtype::CBEGIN ) ) { return false; }
+    block_encoding enc{ *p++ };
+    if( not ( enc._tag == block_type::CBLOCK and enc._type == block_subtype::CBEGIN ) ) { return false; }
     do {
       auto const n = enc._ulen == 0b11 ? 0u : enc._ulen + 1;
       auto const m = enc._clen + 1u;
@@ -184,7 +184,7 @@ class index_view {
       VC::decode( p + n + m, compressed_size, uncompressed_size, out );
       p += n + m + compressed_size;
       enc._value = *p++;
-    } while( p < end and enc._tag == tag::CBLOCK and enc._type != block_subtype::CBEGIN );
+    } while( p < end and enc._tag == block_type::CBLOCK and enc._type != block_subtype::CBEGIN );
     return true;
   }
 
@@ -362,7 +362,7 @@ class poly_index_view {
     virtual value_type compressed_size_128( key128_t const v ) const noexcept = 0;
     virtual void prepare_reverse_lookups() noexcept = 0;
     virtual std::size_t sizeof_domain_value() const noexcept = 0;
-    virtual method::type compression_method() const noexcept = 0;
+    virtual compression_method::type compression_method() const noexcept = 0;
     virtual std::size_t size() const noexcept = 0;
     virtual std::uint64_t segment_offset() const noexcept = 0;
     virtual void output_keys( std::ostream& os ) const noexcept = 0;
@@ -379,7 +379,7 @@ class poly_index_view {
     std::size_t sizeof_domain_value() const noexcept override {
       return sizeof( typename index_view<T, VC>::key_type );
     }
-    method::type compression_method() const noexcept override { return _view.compression_method(); }
+    compression_method::type compression_method() const noexcept override { return _view.compression_method(); }
 
     void output_keys( std::ostream& os ) const noexcept override {
       // TODO: we want a transformation function
@@ -600,8 +600,8 @@ void build_oblock( bytestring_view const data, OutIt out ) {
   if( offset_block + METASZ > sz ) { throw std::runtime_error( "INVALID_OFFSETBLOCK" ); }
   p += offset_block;
   while( p < end ) {
-    encoding const enc{ p[0] };
-    if( enc._tag != tag::OBLOCK ) { break; }
+    block_encoding const enc{ p[0] };
+    if( enc._tag != block_type::OBLOCK ) { break; }
     p++;
     auto const uncompressed_size = enc._ulen == 0b11 ? Compressor::BLOCKLEN
                                                      : vbyte::decode( p, enc._ulen );
@@ -623,8 +623,8 @@ void build_kblock( bytestring_view const data, OutIt out ) {
   if( key_block + METASZ > sz ) { throw std::runtime_error( "INVALID_KEYBLOCK" ); }
   p += key_block;
   while( p < end ) {
-    encoding const enc{ p[0] };
-    if( enc._tag != tag::KBLOCK ) { break; }
+    block_encoding const enc{ p[0] };
+    if( enc._tag != block_type::KBLOCK ) { break; }
     p++;
     auto const uncompressed_size = enc._ulen == 0b11 ? KeyCompressor::BLOCKLEN
                                                      : vbyte::decode( p, enc._ulen );
@@ -687,18 +687,18 @@ static auto from( bytestring_view const data, F const f ) {
   // clang-format off
   if( meta.keyty == 0b01 ) {
     switch( meta.kmethod ) {
-      case method::UC128: { using KC = detail::raw128; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
-      case method::UC256: { using KC = detail::raw256; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
-      case method::SVB128D1: { using KC = detail::svb128d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
-      case method::SVB256D1: { using KC = detail::svb256d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
-      case method::BP128D1: { using KC = detail::bp128d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
-      case method::BP256D1: { using KC = detail::bp256d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::UC128: { using KC = detail::raw128; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::UC256: { using KC = detail::raw256; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::SVB128D1: { using KC = detail::svb128d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::SVB256D1: { using KC = detail::svb256d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::BP128D1: { using KC = detail::bp128d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::BP256D1: { using KC = detail::bp256d1; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
       default: throw std::runtime_error( "UNSUPPORTED_32BIT_KEY_COMPRESSION_METHOD" );
     }
   } else {
     switch( meta.kmethod ) {
-      case method::UC128: { using KC = detail::raw_key128<method::UC128, 128>; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
-      case method::UC256: { using KC = detail::raw_key128<method::UC256, 256>; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::UC128: { using KC = detail::raw_key128<compression_method::UC128, 128>; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
+      case compression_method::UC256: { using KC = detail::raw_key128<compression_method::UC256, 256>; DISPATCH_VALUE_COMPRESSION( meta.vmethod ); }
       default: throw std::runtime_error( "UNSUPPORTED_128BIT_KEY_COMPRESSION_METHOD" );
     }
   }

@@ -8,7 +8,6 @@
 #include <memory>
 
 namespace owl {
-
 struct context;
 struct vulkan;
 struct builder {
@@ -16,13 +15,13 @@ struct builder {
   builder();
   ~builder();
 
-  builder( builder const& ) = delete;
-  builder& operator=( builder const& ) = delete;
+  builder(builder const&) = delete;
+  builder& operator=(builder const&) = delete;
 
-  builder( builder&& ) = default;
-  builder& operator=( builder&& ) = default;
+  builder(builder&&) = default;
+  builder& operator=(builder&&) = default;
 
-  builder& add_font( std::filesystem::path const& font );
+  builder& add_font(std::filesystem::path const& font);
   std::shared_ptr<vulkan> end();
 };
 
@@ -43,8 +42,8 @@ struct vulkan {
  public:
   friend builder;
 
-  vulkan( vulkan const& ) = delete;
-  vulkan& operator=( vulkan const& ) = delete;
+  vulkan(vulkan const&) = delete;
+  vulkan& operator=(vulkan const&) = delete;
 
   auto& window() noexcept;
   auto const& window() const noexcept;
@@ -61,19 +60,19 @@ struct vulkan {
 
   std::pair<int, int> frame() const noexcept;
 
-  void clear( ImVec4 const clear_color ) noexcept;
+  void clear(ImVec4 const clear_color) noexcept;
 
   template <typename F>
-  void run( F const f ) {
-    while( not should_stop() ) {
+  void
+  run(F const f){
+    while(not should_stop()){
       poll();
       begin();
       f();
-      if( render() ) { present(); }
+      if(render()){ present(); }
     }
   }
 
   static builder build();
 };
-
-} // namespace owl
+}                                        // namespace owl

@@ -67,11 +67,9 @@ void ny_command_reverse_slice_by( reverse_slice_config const& config ) {
       auto const rev_rs = sparse_resultset_type::combine<&riot::resultset_forward_type::combine_or<>,
                                                          &riot::resultset_forward_type::combine_and<>>(
           p4->sparse_scan( rs ), px->sparse_scan( rs ) );
-      flog( lvl::v, "reverse sparse-scan hits = ", rev_rs.size(), " ( @", rev_rs.segment_offset(),
-            " )" );
+      flog( lvl::v, "reverse sparse-scan hits = ", rev_rs.size(), " ( @", rev_rs.segment_offset(), " )" );
       pcap::reassemble_stream( pcap, py->segment_offset(), rev_rs.cbegin(), rev_rs.cend(), os );
     } );
   } );
 }
-
-} // namespace nygma
+}
