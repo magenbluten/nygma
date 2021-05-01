@@ -565,12 +565,12 @@ class poly_index_view {
 #define DISPATCH_COMPRESSION_METHOD( type, fn )                                                       \
   do {                                                                                                \
     switch( _p->compression_method() ) {                                                              \
-      case method::UC128: DISPTACH( type, detail::raw128, fn ); break;                                \
-      case method::UC256: DISPTACH( type, detail::raw256, fn ); break;                                \
-      case method::SVB128D1: DISPTACH( type, detail::svb128d1, fn ); break;                           \
-      case method::SVB256D1: DISPTACH( type, detail::svb256d1, fn ); break;                           \
-      case method::BP128D1: DISPTACH( type, detail::bp128d1, fn ); break;                             \
-      case method::BP256D1: DISPTACH( type, detail::bp256d1, fn ); break;                             \
+      case compression_method::UC128: DISPTACH( type, detail::raw128, fn ); break;                                \
+      case compression_method::UC256: DISPTACH( type, detail::raw256, fn ); break;                                \
+      case compression_method::SVB128D1: DISPTACH( type, detail::svb128d1, fn ); break;                           \
+      case compression_method::SVB256D1: DISPTACH( type, detail::svb256d1, fn ); break;                           \
+      case compression_method::BP128D1: DISPTACH( type, detail::bp128d1, fn ); break;                             \
+      case compression_method::BP256D1: DISPTACH( type, detail::bp256d1, fn ); break;                             \
       default: break;                                                                                 \
     }                                                                                                 \
   } while( false )
@@ -650,12 +650,12 @@ static auto from( bytestring_view const data, std::uint64_t const segment_offset
 #define DISPATCH_VALUE_COMPRESSION( m )                                                               \
   do {                                                                                                \
     switch( m ) {                                                                                     \
-      case method::UC128: return from<KC, detail::raw128>( data, meta.segment_offset, f );            \
-      case method::UC256: return from<KC, detail::raw256>( data, meta.segment_offset, f );            \
-      case method::SVB128D1: return from<KC, detail::svb128d1>( data, meta.segment_offset, f );       \
-      case method::SVB256D1: return from<KC, detail::svb256d1>( data, meta.segment_offset, f );       \
-      case method::BP128D1: return from<KC, detail::bp128d1>( data, meta.segment_offset, f );         \
-      case method::BP256D1: return from<KC, detail::bp256d1>( data, meta.segment_offset, f );         \
+      case compression_method::UC128: return from<KC, detail::raw128>( data, meta.segment_offset, f );            \
+      case compression_method::UC256: return from<KC, detail::raw256>( data, meta.segment_offset, f );            \
+      case compression_method::SVB128D1: return from<KC, detail::svb128d1>( data, meta.segment_offset, f );       \
+      case compression_method::SVB256D1: return from<KC, detail::svb256d1>( data, meta.segment_offset, f );       \
+      case compression_method::BP128D1: return from<KC, detail::bp128d1>( data, meta.segment_offset, f );         \
+      case compression_method::BP256D1: return from<KC, detail::bp256d1>( data, meta.segment_offset, f );         \
       default: throw std::runtime_error( "UNSUPPORTED_VALUE_COMPRESSION_METHOD" );                    \
     }                                                                                                 \
   } while( false )

@@ -23,7 +23,7 @@ CXXFLAGS += -Wno-implicit-int-float-conversion
 CXXFLAGS += `pkg-config --cflags glfw3`
 CXXFLAGS += `pkg-config --cflags vulkan`
 
-LDFLAGS += -lpthread
+LDFLAGS += -lpthread -lm
 LDFLAGS += `pkg-config --libs glfw3`
 LDFLAGS += `pkg-config --libs vulkan`
 

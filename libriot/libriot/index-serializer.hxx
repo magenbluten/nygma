@@ -80,16 +80,16 @@ union block_encoding {
 
   constexpr block_encoding( std::byte const value ) noexcept : _value{ value } {}
 
-  void tag( tag::type const t ) noexcept { _tag = t; }
+  void tag( block_type::type const t ) noexcept { _tag = t; }
   void ulen( std::uint8_t const ulen ) noexcept { _ulen = ulen; }
   void clen( std::uint8_t const clen ) noexcept { _clen = clen; }
 
-  static constexpr block_encoding kblock() noexcept { return { tag::KBLOCK, block_subtype::NONE }; }
+  static constexpr block_encoding kblock() noexcept { return { block_type::KBLOCK, block_subtype::NONE }; }
 
-  static constexpr block_encoding oblock() noexcept { return { tag::OBLOCK, block_subtype::NONE }; }
+  static constexpr block_encoding oblock() noexcept { return { block_type::OBLOCK, block_subtype::NONE }; }
 
   static constexpr block_encoding cblock( block_subtype::type const subty ) noexcept {
-    return { tag::CBLOCK, subty };
+    return { block_type::CBLOCK, subty };
   }
 };
 

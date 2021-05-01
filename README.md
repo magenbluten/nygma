@@ -10,13 +10,13 @@ _______ _____.___. ________    _____      _____
 
 # NYGMA - network packet processing
 
-... from hackers for hackers ...
+... from hackers for hackers
 
-NOTE: `NYGMA V2` is currently in development; for now happending in a private repository.
+`nygma v2` is currently in development happending in a private repository.
 
-re-release is planned for Q2/2021.
+re-release is unscheduled so far.
 
-- see: [README]( doc/README.md ) ( outdated ) 
+- see: [README](doc/README.md) (outdated) 
 - see: https://nygma.io
 
 ## support & blame-game
